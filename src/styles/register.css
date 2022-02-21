@@ -144,3 +144,11 @@ button {
   width: 20px;
   margin: 0 5px 2px 2px;
 }
+
+.register__errmsg {
+  color: red;
+}
+
+.register__offscreen {
+  display: none;
+}

@@ -5,17 +5,18 @@ import {
   faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-//import axios from 'axios';
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "../styles/register.css";
 const USER_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 const EMAIL_REGEX = /^[^@]+@\w+(\.\w+)+\w$/;
 const ROLE_REGEX = /^[A-z][A-z0-9-_]{2,23}$/;
+const REGISTER_URL =
+  "http://auth-LoadBa-CGBE68BBZ13X-bf0d1207c1bf57b7.elb.us-east-1.amazonaws.com:8080/api/auth/signup";
 
 const Register = () => {
   const userRef = useRef();
-  const errRef = useRef();
 
   const [user, setUser] = useState("");
   const [validName, setValidName] = useState(false);
@@ -36,6 +37,8 @@ const Register = () => {
   const [role, setRole] = useState("");
   const [validRole, setValidRole] = useState(false);
   const [roleFocus, setRoleFocus] = useState(false);
+
+  const [errMsg, setErrMsg] = useState("");
 
   let navigate = useNavigate();
 
@@ -60,30 +63,40 @@ const Register = () => {
     setValidRole(ROLE_REGEX.test(role));
   }, [role]);
 
+  useEffect(() => {
+    setErrMsg("");
+  }, [user, pwd, matchPwd, role]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      /* const response = await axios.post(REGISTER_URL,
-                JSON.stringify({ user, email, pwd, role }),
-                {
-                    headers: { 'Content-Type': 'application/json' },
-                    withCredentials: true
-                }
-            );
-            console.log(JSON.stringify(response?.data));*/
-
-      //clear state and controlled inputs
+      const response = await axios.post(
+        REGISTER_URL,
+        JSON.stringify({ username: user, email, password: pwd, role: [role] }),
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          withCredentials: false,
+        }
+      );
       setUser("");
       setEmail("");
       setPwd("");
       setMatchPwd("");
       setRole("");
-      // localStorage.setItem("user-info", JSON.stringify(response?.data?.username));
-      localStorage.setItem("user-info", "test");
+      localStorage.setItem("user-info", JSON.stringify(response?.data?.id));
       navigate("/dashboard");
     } catch (err) {
-      errRef.current.focus();
+      if (!err?.response) {
+        setErrMsg("No Server Response");
+      } else if (err.response?.status === 409) {
+        setErrMsg("Username Taken");
+      } else {
+        setErrMsg("Registration Failed");
+        console.log(err.message);
+      }
     }
   };
 
@@ -93,6 +106,12 @@ const Register = () => {
   return (
     <div className="register">
       <div className="register__container">
+        <p
+          className={errMsg ? "register__errmsg" : "register__offscreen"}
+          aria-live="assertive"
+        >
+          {errMsg}
+        </p>
         <h1>Register</h1>
         <form onSubmit={handleSubmit}>
           <label htmlFor="username">

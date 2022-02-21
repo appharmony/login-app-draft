@@ -11,13 +11,7 @@ function Navbar() {
   const closeMobileMenu = () => setClick(false);
 
   const logout = () => {
-    {
-      console.log("before:", localStorage.getItem("user-info"));
-    }
     localStorage.clear();
-    {
-      console.log("after:", localStorage.getItem("user-info"));
-    }
     navigate("/");
   };
 
@@ -40,6 +34,7 @@ function Navbar() {
             <a
               href="https://www.google.com/"
               target="_blank"
+              rel="noreferrer"
               className="navbar__links"
               onClick={closeMobileMenu}
             >
@@ -50,6 +45,7 @@ function Navbar() {
             <a
               href="https://www.google.com/"
               target="_blank"
+              rel="noreferrer"
               className="navbar__links"
               onClick={closeMobileMenu}
             >
