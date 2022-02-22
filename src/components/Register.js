@@ -11,7 +11,6 @@ import "../styles/register.css";
 const USER_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 const EMAIL_REGEX = /^[^@]+@\w+(\.\w+)+\w$/;
-const ROLE_REGEX = /^[A-z][A-z0-9-_]{2,23}$/;
 const REGISTER_URL =
   "http://auth-LoadBa-CGBE68BBZ13X-bf0d1207c1bf57b7.elb.us-east-1.amazonaws.com:8080/api/auth/signup";
 
@@ -34,13 +33,19 @@ const Register = () => {
   const [validMatch, setValidMatch] = useState(false);
   const [matchFocus, setMatchFocus] = useState(false);
 
-  const [role, setRole] = useState("");
-  const [validRole, setValidRole] = useState(false);
-  const [roleFocus, setRoleFocus] = useState(false);
+  const [role, setRole] = useState("viewonly");
 
   const [errMsg, setErrMsg] = useState("");
 
   let navigate = useNavigate();
+
+  const [items] = useState([
+    {
+      label: "View-Only",
+      value: "viewonly",
+    },
+    { label: "Full-Access", value: "fullaccess" },
+  ]);
 
   useEffect(() => {
     userRef.current.focus();
@@ -60,12 +65,8 @@ const Register = () => {
   }, [pwd, matchPwd]);
 
   useEffect(() => {
-    setValidRole(ROLE_REGEX.test(role));
-  }, [role]);
-
-  useEffect(() => {
     setErrMsg("");
-  }, [user, pwd, matchPwd, role]);
+  }, [user, pwd, matchPwd]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -85,7 +86,6 @@ const Register = () => {
       setEmail("");
       setPwd("");
       setMatchPwd("");
-      setRole("");
       localStorage.setItem("user-info", JSON.stringify(response?.data?.id));
       navigate("/dashboard");
     } catch (err) {
@@ -263,44 +263,18 @@ const Register = () => {
             Must match the first password input field.
           </p>
 
-          <label htmlFor="role">
-            Role:
-            <FontAwesomeIcon
-              icon={faCheck}
-              className={validRole ? "valid" : "hide"}
-            />
-            <FontAwesomeIcon
-              icon={faTimes}
-              className={validRole || !role ? "hide" : "invalid"}
-            />
-          </label>
-          <input
-            type="text"
+          <label htmlFor="role">Role:</label>
+          <select
             id="role"
-            autoComplete="off"
-            onChange={(e) => setRole(e.target.value)}
+            onChange={(e) => setRole(e.currentTarget.value)}
             value={role}
-            required
-            aria-invalid={validRole ? "false" : "true"}
-            aria-describedby="uidnote"
-            onFocus={() => setRoleFocus(true)}
-            onBlur={() => setRoleFocus(false)}
-          />
-          <p
-            id="uidnote"
-            className={
-              roleFocus && role && !validRole
-                ? "register__instructions"
-                : "register__offscreen"
-            }
           >
-            <FontAwesomeIcon icon={faInfoCircle} />
-            3 to 24 characters.
-            <br />
-            Must begin with a letter.
-            <br />
-            Letters, numbers, underscores, hyphens allowed.
-          </p>
+            {items.map(({ label, value }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
 
           <button
             className="register__button"
